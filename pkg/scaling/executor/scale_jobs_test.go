@@ -301,7 +301,6 @@ type pendingJobTestData struct {
 func getMockScaleExecutor(client *mock_client.MockClient) *scaleExecutor {
 	return &scaleExecutor{
 		client:           client,
-		scaleClient:      nil,
 		reconcilerScheme: nil,
 		logger:           logf.Log.WithName("scaleexecutor"),
 	}
