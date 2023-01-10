@@ -31,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -60,10 +59,10 @@ import (
 
 // ScaledObjectReconciler reconciles a ScaledObject object
 type ScaledObjectReconciler struct {
-	Client       client.Client
-	Scheme       *runtime.Scheme
-	Recorder     record.EventRecorder
-	ScaleClient  scale.ScalesGetter
+	Client   client.Client
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
+	//ScaleClient  scale.ScalesGetter
 	ScaleHandler scaling.ScaleHandler
 
 	restMapper               meta.RESTMapper
@@ -104,9 +103,7 @@ func (r *ScaledObjectReconciler) SetupWithManager(mgr ctrl.Manager, options cont
 	if r.Client == nil {
 		return fmt.Errorf("ScaledObjectReconciler.Client is not initialized")
 	}
-	if r.ScaleClient == nil {
-		return fmt.Errorf("ScaledObjectReconciler.ScaleClient is not initialized")
-	}
+
 	if r.Scheme == nil {
 		return fmt.Errorf("ScaledObjectReconciler.Scheme is not initialized")
 	}
@@ -291,7 +288,9 @@ func (r *ScaledObjectReconciler) checkTargetResourceIsScalable(ctx context.Conte
 		// not cached, let's try to detect /scale subresource
 		// also rechecks when we need to update the status.
 		var errScale error
-		scale, errScale = (r.ScaleClient).Scales(scaledObject.Namespace).Get(ctx, gr, scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
+		//scale, errScale = (r.ScaleClient).Scales(scaledObject.Namespace).Get(ctx, gr, scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
+		scale := &autoscalingv1.Scale{}
+		errScale = r.Client.SubResource("scaler").Get(ctx, scaledObject, scale)
 		if errScale != nil {
 			// not able to get /scale subresource -> let's check if the resource even exist in the cluster
 			unstruct := &unstructured.Unstructured{}

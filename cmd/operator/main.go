@@ -197,19 +197,18 @@ func main() {
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(kubeClientset, 1*time.Hour, kubeinformers.WithNamespace(objectNamespace))
 	secretInformer := kubeInformerFactory.Core().V1().Secrets()
 
-	scaleClient, kubeVersion, err := k8s.InitScaleClient(mgr)
+	_, kubeVersion, err := k8s.InitScaleClient(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to init scale client")
 		os.Exit(1)
 	}
 
-	scaledHandler := scaling.NewScaleHandler(mgr.GetClient(), scaleClient, mgr.GetScheme(), globalHTTPTimeout, eventRecorder, secretInformer.Lister())
+	scaledHandler := scaling.NewScaleHandler(mgr.GetClient(), mgr.GetScheme(), globalHTTPTimeout, eventRecorder, secretInformer.Lister())
 
 	if err = (&kedacontrollers.ScaledObjectReconciler{
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
 		Recorder:     eventRecorder,
-		ScaleClient:  scaleClient,
 		ScaleHandler: scaledHandler,
 	}).SetupWithManager(mgr, controller.Options{MaxConcurrentReconciles: scaledObjectMaxReconciles}); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ScaledObject")

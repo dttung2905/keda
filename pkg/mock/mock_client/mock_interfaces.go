@@ -351,6 +351,11 @@ type MockClient struct {
 	recorder *MockClientMockRecorder
 }
 
+func (m *MockClient) SubResource(subResource string) client.SubResourceClient {
+	//TODO implement me
+	panic("implement me")
+}
+
 // MockClientMockRecorder is the mock recorder for MockClient.
 type MockClientMockRecorder struct {
 	mock *MockClient

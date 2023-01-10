@@ -150,7 +150,7 @@ func (a *Adapter) makeProvider(ctx context.Context, globalHTTPTimeout time.Durat
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(kubeClientset, 1*time.Hour, kubeinformers.WithNamespace(objectNamespace))
 	secretInformer := kubeInformerFactory.Core().V1().Secrets()
 
-	handler := scaling.NewScaleHandler(mgr.GetClient(), nil, scheme, globalHTTPTimeout, recorder, secretInformer.Lister())
+	handler := scaling.NewScaleHandler(mgr.GetClient(), scheme, globalHTTPTimeout, recorder, secretInformer.Lister())
 	kubeInformerFactory.Start(ctx.Done())
 
 	externalMetricsInfo := &[]provider.ExternalMetricInfo{}
