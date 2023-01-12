@@ -36,6 +36,7 @@ require (
 	github.com/gobwas/glob v0.2.3
 	github.com/gocql/gocql v1.3.0
 	github.com/golang/mock v1.6.0
+	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/gophercloud/gophercloud v1.1.0
@@ -79,13 +80,13 @@ require (
 	k8s.io/code-generator v0.26.0
 	k8s.io/klog/v2 v2.80.2-0.20221028030830-9ae4992afb54
 	k8s.io/kube-openapi v0.0.0-20221123214604-86e75ddd809a
-	k8s.io/metrics v0.25.4
+	k8s.io/metrics v0.26.0
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448
 	knative.dev/pkg v0.0.0-20221123154742-05b694ec4d3a
 	sigs.k8s.io/controller-runtime v0.14.1
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20221201045826-d9912251cd81
 	sigs.k8s.io/controller-tools v0.10.0
-	sigs.k8s.io/custom-metrics-apiserver v1.25.1
+	sigs.k8s.io/custom-metrics-apiserver v1.25.1-0.20230111165344-67079ba4ba67
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
 )
 
@@ -176,7 +177,6 @@ require (
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/cel-go v0.12.5 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
@@ -286,7 +286,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/net v0.3.1-0.20221206200815-1e63c2f08a10 // indirect
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/term v0.3.0 // indirect
