@@ -200,7 +200,6 @@ func main() {
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
 		Recorder:     eventRecorder,
-		ScaleClient:  scaleClient,
 		ScaleHandler: scaledHandler,
 	}).SetupWithManager(mgr, controller.Options{MaxConcurrentReconciles: scaledObjectMaxReconciles}); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ScaledObject")
