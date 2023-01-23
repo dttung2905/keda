@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -63,7 +63,6 @@ type ScaledObjectReconciler struct {
 	Client       client.Client
 	Scheme       *runtime.Scheme
 	Recorder     record.EventRecorder
-	ScaleClient  scale.ScalesGetter
 	ScaleHandler scaling.ScaleHandler
 
 	restMapper               meta.RESTMapper
@@ -104,9 +103,7 @@ func (r *ScaledObjectReconciler) SetupWithManager(mgr ctrl.Manager, options cont
 	if r.Client == nil {
 		return fmt.Errorf("ScaledObjectReconciler.Client is not initialized")
 	}
-	if r.ScaleClient == nil {
-		return fmt.Errorf("ScaledObjectReconciler.ScaleClient is not initialized")
-	}
+
 	if r.Scheme == nil {
 		return fmt.Errorf("ScaledObjectReconciler.Scheme is not initialized")
 	}
@@ -291,7 +288,10 @@ func (r *ScaledObjectReconciler) checkTargetResourceIsScalable(ctx context.Conte
 		// not cached, let's try to detect /scale subresource
 		// also rechecks when we need to update the status.
 		var errScale error
-		scale, errScale = (r.ScaleClient).Scales(scaledObject.Namespace).Get(ctx, gr, scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
+		scale = &autoscalingv1.Scale{}
+		dep := &appsv1.Deployment{}
+		errScale = r.Client.Get(ctx, client.ObjectKey{Name: scaledObject.Spec.ScaleTargetRef.Name, Namespace: scaledObject.Namespace}, dep)
+
 		if errScale != nil {
 			// not able to get /scale subresource -> let's check if the resource even exist in the cluster
 			unstruct := &unstructured.Unstructured{}
@@ -366,7 +366,7 @@ func (r *ScaledObjectReconciler) checkTriggers(scaledObject *kedav1alpha1.Scaled
 }
 
 // checkReplicaCountBoundsAreValid checks that Idle/Min/Max ReplicaCount defined in ScaledObject are correctly specified
-// ie. that Min is not greater then Max or Idle greater or equal to Min
+// i.e. that Min is not greater than Max or Idle greater or equal to Min
 func (r *ScaledObjectReconciler) checkReplicaCountBoundsAreValid(scaledObject *kedav1alpha1.ScaledObject) error {
 	min := int32(0)
 	if scaledObject.Spec.MinReplicaCount != nil {

@@ -231,8 +231,7 @@ spec:
                 format: int32
                 type: integer
               scaleTargetRef:
-                description: ScaleTarget holds the a reference to the scale target
-                  Object
+                description: ScaleTarget holds a reference to the scale target Object
                 properties:
                   apiVersion:
                     type: string
