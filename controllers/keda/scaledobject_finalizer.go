@@ -20,13 +20,14 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	"github.com/kedacore/keda/v2/controllers/keda/util"
 	"github.com/kedacore/keda/v2/pkg/eventreason"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -53,7 +54,11 @@ func (r *ScaledObjectReconciler) finalizeScaledObject(ctx context.Context, logge
 				logger.V(1).Info("Failed to restore scaleTarget's replica count back to the original, the scaling haven't been probably initialized yet.")
 			} else {
 				// We have enough information about the scaleTarget, let's proceed.
-				scale, err := r.ScaleClient.Scales(scaledObject.Namespace).Get(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
+				//scale, err := r.ScaleClient.Scales(scaledObject.Namespace).Get(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
+				scale := &autoscalingv1.Scale{}
+				dep := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: scaledObject.Namespace, Name: scaledObject.Spec.ScaleTargetRef.Name}}
+
+				err := r.Client.SubResource("scale").Get(ctx, dep, scale)
 				if err != nil {
 					if errors.IsNotFound(err) {
 						logger.V(1).Info("Failed to get scaleTarget's scale status, because it was probably deleted", "error", err)
@@ -62,7 +67,9 @@ func (r *ScaledObjectReconciler) finalizeScaledObject(ctx context.Context, logge
 					}
 				} else {
 					scale.Spec.Replicas = *scaledObject.Status.OriginalReplicaCount
-					_, err = r.ScaleClient.Scales(scaledObject.Namespace).Update(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scale, metav1.UpdateOptions{})
+					dep := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: scaledObject.Namespace, Name: scaledObject.Spec.ScaleTargetRef.Name}}
+					//_, err = r.ScaleClient.Scales(scaledObject.Namespace).Update(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scale, metav1.UpdateOptions{})
+					err := r.Client.SubResource("scale").Update(ctx, dep)
 					if err != nil {
 						logger.Error(err, "Failed to restore scaleTarget's replica count back to the original", "finalizer", scaledObjectFinalizer)
 					}
