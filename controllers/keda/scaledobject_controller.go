@@ -22,7 +22,6 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
-	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -288,11 +287,14 @@ func (r *ScaledObjectReconciler) checkTargetResourceIsScalable(ctx context.Conte
 		// not cached, let's try to detect /scale subresource
 		// also rechecks when we need to update the status.
 		var errScale error
-		//scale, errScale = (r.ScaleClient).Scales(scaledObject.Namespace).Get(ctx, gr, scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
-		scale = &autoscalingv1.Scale{}
-		dep := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: scaledObject.Namespace, Name: scaledObject.Spec.ScaleTargetRef.Name}}
-
-		errScale = r.Client.SubResource("scale").Get(ctx, dep, scale)
+		unstructuredScale := &unstructured.Unstructured{}
+		unstructuredScale.SetAPIVersion("autoscaling/v1")
+		unstructuredScale.SetKind("Scale")
+		dep := &unstructured.Unstructured{}
+		dep.SetGroupVersionKind(gvkr.GroupVersionKind())
+		dep.SetNamespace(scaledObject.Namespace)
+		dep.SetName(scaledObject.Spec.ScaleTargetRef.Name)
+		errScale = r.Client.SubResource("scale").Get(ctx, dep, unstructuredScale)
 		if errScale != nil {
 			// not able to get /scale subresource -> let's check if the resource even exist in the cluster
 			unstruct := &unstructured.Unstructured{}
@@ -307,8 +309,14 @@ func (r *ScaledObjectReconciler) checkTargetResourceIsScalable(ctx context.Conte
 			return gvkr, errScale
 		}
 		isScalableCache.Store(gr.String(), true)
-	}
 
+		scale = &autoscalingv1.Scale{}
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredScale.UnstructuredContent(), &scale)
+		if err != nil {
+			logger.Error(err, "Unable to convert unstructured resource to scale Resource")
+			return gvkr, err
+		}
+	}
 	// if it is not already present in ScaledObject Status:
 	// - store discovered GVK and GVKR
 	// - store original scaleTarget's replica count (before scaling with KEDA)
