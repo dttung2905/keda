@@ -26,6 +26,8 @@ import (
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
@@ -323,7 +325,23 @@ func (e *scaleExecutor) scaleFromZeroOrIdle(ctx context.Context, logger logr.Log
 }
 
 func (e *scaleExecutor) getScaleTargetScale(ctx context.Context, scaledObject *kedav1alpha1.ScaledObject) (*autoscalingv1.Scale, error) {
-	return e.scaleClient.Scales(scaledObject.Namespace).Get(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
+	unstructuredScale := &unstructured.Unstructured{}
+	unstructuredScale.SetAPIVersion("autoscaling/v1")
+	unstructuredScale.SetKind("Scale")
+
+	dep := &unstructured.Unstructured{}
+	dep.SetGroupVersionKind(scaledObject.Status.ScaleTargetGVKR.GroupVersionKind())
+	//dep.SetAPIVersion(scaledObject.Status.ScaleTargetGVKR.Version)
+	//dep.SetResourceVersion(scaledObject.Status.ScaleTargetGVKR.Version)
+	dep.SetNamespace(scaledObject.Namespace)
+	dep.SetName(scaledObject.Spec.ScaleTargetRef.Name)
+
+	err := e.client.SubResource("scale").Get(ctx, dep, unstructuredScale)
+
+	scale := &autoscalingv1.Scale{}
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(unstructuredScale.UnstructuredContent(), &scale)
+	return scale, err
+	//return e.scaleClient.Scales(scaledObject.Namespace).Get(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scaledObject.Spec.ScaleTargetRef.Name, metav1.GetOptions{})
 }
 
 func (e *scaleExecutor) updateScaleOnScaleTarget(ctx context.Context, scaledObject *kedav1alpha1.ScaledObject, scale *autoscalingv1.Scale, replicas int32) (int32, error) {
@@ -340,7 +358,8 @@ func (e *scaleExecutor) updateScaleOnScaleTarget(ctx context.Context, scaledObje
 	currentReplicas := scale.Spec.Replicas
 	scale.Spec.Replicas = replicas
 
-	_, err := e.scaleClient.Scales(scaledObject.Namespace).Update(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scale, metav1.UpdateOptions{})
+	//_, err := e.scaleClient.Scales(scaledObject.Namespace).Update(ctx, scaledObject.Status.ScaleTargetGVKR.GroupResource(), scale, metav1.UpdateOptions{})
+	err := e.client.SubResource("scale").Update(ctx, scale)
 	return currentReplicas, err
 }
 

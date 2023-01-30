@@ -44,7 +44,6 @@ type ScaleExecutor interface {
 
 type scaleExecutor struct {
 	client           runtimeclient.Client
-	scaleClient      scale.ScalesGetter
 	reconcilerScheme *runtime.Scheme
 	logger           logr.Logger
 	recorder         record.EventRecorder
@@ -54,7 +53,6 @@ type scaleExecutor struct {
 func NewScaleExecutor(client runtimeclient.Client, scaleClient scale.ScalesGetter, reconcilerScheme *runtime.Scheme, recorder record.EventRecorder) ScaleExecutor {
 	return &scaleExecutor{
 		client:           client,
-		scaleClient:      scaleClient,
 		reconcilerScheme: reconcilerScheme,
 		logger:           logf.Log.WithName("scaleexecutor"),
 		recorder:         recorder,
