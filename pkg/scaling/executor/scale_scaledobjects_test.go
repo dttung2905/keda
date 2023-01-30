@@ -36,11 +36,10 @@ func TestScaleToFallbackReplicasWhenNotActiveAndIsError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := mock_client.NewMockClient(ctrl)
 	recorder := record.NewFakeRecorder(1)
-	mockScaleClient := mock_scale.NewMockScalesGetter(ctrl)
 	//mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
-	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
+	scaleExecutor := NewScaleExecutor(client, nil, recorder)
 
 	scaledObject := v1alpha1.ScaledObject{
 		ObjectMeta: v1.ObjectMeta{
@@ -102,7 +101,7 @@ func TestScaleToMinReplicasWhenNotActive(t *testing.T) {
 	mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
-	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
+	scaleExecutor := NewScaleExecutor(client, nil, recorder)
 
 	minReplicas := int32(0)
 
@@ -163,7 +162,7 @@ func TestScaleToMinReplicasFromLowerInitialReplicaCount(t *testing.T) {
 	mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
-	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
+	scaleExecutor := NewScaleExecutor(client, nil, recorder)
 
 	minReplicas := int32(5)
 
@@ -224,7 +223,7 @@ func TestScaleFromMinReplicasWhenActive(t *testing.T) {
 	mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
-	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
+	scaleExecutor := NewScaleExecutor(client, nil, recorder)
 
 	minReplicas := int32(0)
 
@@ -283,7 +282,7 @@ func TestScaleToIdleReplicasWhenNotActive(t *testing.T) {
 	mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
-	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
+	scaleExecutor := NewScaleExecutor(client, nil, recorder)
 
 	idleReplicas := int32(0)
 	minReplicas := int32(5)
@@ -346,7 +345,7 @@ func TestScaleFromIdleToMinReplicasWhenActive(t *testing.T) {
 	mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
-	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
+	scaleExecutor := NewScaleExecutor(client, nil, recorder)
 
 	idleReplicas := int32(0)
 	minReplicas := int32(5)
@@ -407,7 +406,7 @@ func TestScaleToPausedReplicasCount(t *testing.T) {
 	mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
-	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
+	scaleExecutor := NewScaleExecutor(client, nil, recorder)
 
 	scaledObject := v1alpha1.ScaledObject{
 		ObjectMeta: v1.ObjectMeta{
