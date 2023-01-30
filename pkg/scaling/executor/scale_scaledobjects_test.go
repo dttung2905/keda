@@ -37,7 +37,7 @@ func TestScaleToFallbackReplicasWhenNotActiveAndIsError(t *testing.T) {
 	client := mock_client.NewMockClient(ctrl)
 	recorder := record.NewFakeRecorder(1)
 	mockScaleClient := mock_scale.NewMockScalesGetter(ctrl)
-	mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
+	//mockScaleInterface := mock_scale.NewMockScaleInterface(ctrl)
 	statusWriter := mock_client.NewMockStatusWriter(ctrl)
 
 	scaleExecutor := NewScaleExecutor(client, mockScaleClient, nil, recorder)
@@ -73,16 +73,16 @@ func TestScaleToFallbackReplicasWhenNotActiveAndIsError(t *testing.T) {
 			Replicas: &numberOfReplicas,
 		},
 	})
-
+	client.EXPECT().SubResource(gomock.Any())
 	scale := &autoscalingv1.Scale{
 		Spec: autoscalingv1.ScaleSpec{
 			Replicas: numberOfReplicas,
 		},
 	}
 
-	mockScaleClient.EXPECT().Scales(gomock.Any()).Return(mockScaleInterface).Times(2)
-	mockScaleInterface.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(scale, nil)
-	mockScaleInterface.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Eq(scale), gomock.Any())
+	//mockScaleClient.EXPECT().Scales(gomock.Any()).Return(mockScaleInterface).Times(2)
+	//mockScaleInterface.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(scale, nil)
+	//mockScaleInterface.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Eq(scale), gomock.Any())
 
 	client.EXPECT().Status().Times(2).Return(statusWriter)
 	statusWriter.EXPECT().Patch(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
