@@ -54,52 +54,52 @@ const (
 )
 
 type kafkaMetadata struct {
-	bootstrapServers       []string
-	group                  string
-	topic                  string
-	partitionLimitation    []int32
-	lagThreshold           int64
-	activationLagThreshold int64
-	offsetResetPolicy      offsetResetPolicy
-	allowIdleConsumers     bool
-	excludePersistentLag   bool
-	version                sarama.KafkaVersion
+	bootstrapServers       []string            `keda:"name=bootstrapServers, order=resolvedEnv,triggerMetadata"`
+	group                  string              `keda:"name=consumerGroup, order=resolvedEnv,triggerMetadata"`
+	topic                  string              `keda:"name=topic, order=resolvedEnv,triggerMetadata, default=''"`
+	partitionLimitation    []int32             `keda:"name=partitionLimitation, order=triggerMetadata, default=nil"`
+	lagThreshold           int64               `keda:"name=lagThreshold, order=triggerMetadata, default=10"`
+	activationLagThreshold int64               `keda:"name=activationLagThreshold, order=triggerMetadata, default=0"`
+	offsetResetPolicy      offsetResetPolicy   `keda:"name=offsetResetPolicy, order=triggerMetadata, default=latest"`
+	allowIdleConsumers     bool                `keda:"name=allowIdleConsumers, order=triggerMetadata, default=false"`
+	excludePersistentLag   bool                `keda:"name=excludePersistentLag, order=triggerMetadata, default=false"`
+	version                sarama.KafkaVersion `keda:"name=version, order=triggerMetadata, default=1.0.0"`
 
 	// If an invalid offset is found, whether to scale to 1 (false - the default) so consumption can
 	// occur or scale to 0 (true). See discussion in https://github.com/kedacore/keda/issues/2612
-	scaleToZeroOnInvalidOffset bool
-	limitToPartitionsWithLag   bool
+	scaleToZeroOnInvalidOffset bool `keda:"name=scaleToZeroOnInvalidOffset, order=triggerMetadata, default=false"`
+	limitToPartitionsWithLag   bool `keda:"name=limitToPartitionsWithLag, order=triggerMetadata, default=false"`
 
 	// SASL
-	saslType kafkaSaslType
-	username string
-	password string
+	saslType kafkaSaslType `keda:"name=saslType, order=triggerMetadata,authParams, default=none"`
+	username string        `keda:"name=username, order=authParams"`
+	password string        `keda:"name=password, order=authParams"`
 
 	// GSSAPI
-	keytabPath          string
-	realm               string
-	kerberosConfigPath  string
-	kerberosServiceName string
+	keytabPath          string // Too complicated
+	realm               string `keda:"realm, order=authParams"`
+	kerberosConfigPath  string // Too complicated
+	kerberosServiceName string `keda:"kerberosServiceName, order=authParams, default=nil"`
 
 	// OAUTHBEARER
-	tokenProvider         kafkaSaslOAuthTokenProvider
-	scopes                []string
-	oauthTokenEndpointURI string
-	oauthExtensions       map[string]string
+	tokenProvider         kafkaSaslOAuthTokenProvider // Too complicated
+	scopes                []string                    `keda:"name=scopes, order=authParams, default=nil"` // need to split string
+	oauthTokenEndpointURI string                      `keda:"oauthTokenEndpointURI, order=authParams"`
+	oauthExtensions       map[string]string           `keda:"oauthExtensions, order=authParams"`
 
 	// MSK
-	awsRegion        string
-	awsAuthorization awsutils.AuthorizationMetadata
+	awsRegion        string                         `keda:"awsRegion, order=triggerMetadata, default=nil"`
+	awsAuthorization awsutils.AuthorizationMetadata // Too complicated
 
 	// TLS
-	enableTLS   bool
-	cert        string
-	key         string
-	keyPassword string
-	ca          string
-	unsafeSsl   bool
+	enableTLS   bool   `keda:"enableTLS, order=triggerMetadata, default=false"`
+	cert        string `keda:"cert, order=authParams, default=nil"`
+	key         string `keda:"key, order=authParams, default=nil"`
+	keyPassword string `keda:"key, order=authParams, default=''"`
+	ca          string `keda:"ca, order=authParams, default=nil"`
+	unsafeSsl   bool   `keda:"unsafeSsl, order=triggerMetadata, default=false"`
 
-	triggerIndex int
+	triggerIndex int // Too complicated
 }
 
 type offsetResetPolicy string
